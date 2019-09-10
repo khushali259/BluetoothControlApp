@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    tools:context="com.example.bluetoothcontrol.MainActivity">
+
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/setting"
+        android:visibility="visible">
+
+
+
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1"
+                android:text="Status:"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.9"
+                android:id="@+id/bluetoothStatus"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:layout_centerHorizontal="true"
+                android:layout_alignTop="@+id/checkboxLED1" />
+        </LinearLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bluetooth ON"
+            android:id="@+id/scan"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/off" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bluetooth OFF"
+            android:id="@+id/off"
+            android:layout_alignBottom="@+id/scan"
+            android:layout_toEndOf="@+id/PairedBtn"
+            android:layout_toRightOf="@+id/PairedBtn" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show paired Devices"
+            android:id="@+id/PairedBtn"
+            android:layout_below="@+id/scan"
+            android:layout_toLeftOf="@+id/discover" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Discover New Devices"
+            android:id="@+id/discover"
+            android:layout_below="@+id/off"
+            android:layout_toRightOf="@+id/checkboxLED1"
+            android:layout_toEndOf="@+id/checkboxLED1" />
+
+        <ListView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/devicesListView"
+            android:choiceMode="singleChoice"
+            android:layout_below="@+id/PairedBtn"
+            android:layout_alignRight="@+id/off"
+            android:layout_alignEnd="@+id/off" />
+
+    </LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/controls"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/forward"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/forward"
+                android:layout_above="@+id/linlayout"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/linlayout"
+                android:gravity="center">
+                <ImageView
+                    android:id="@+id/left"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/left"/>
+                <Space
+                    android:layout_width="80dp"
+                    android:layout_height="match_parent"/>
+                <ImageView
+                    android:id="@+id/right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/right"/>
+
+            </LinearLayout>
+            <ImageView
+                android:id="@+id/backward"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/backward" />
+        </LinearLayout>
+
+
+    </RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"
+        android:orientation="vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:gravity="center">
+        <RadioGroup
+            android:checkedButton="@+id/offer"
+            android:id="@+id/toggle"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/pink_out_line"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:layout_marginTop="1dp"
+                android:layout_marginBottom="1dp"
+                android:layout_marginLeft="1dp"
+                android:id="@+id/search"
+                android:background="@drawable/toggle_widget_background"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:button="@null"
+                android:gravity="center"
+                android:text="Search"
+                android:textColor="@color/white" />
+
+            <RadioButton
+                android:layout_marginRight="1dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginBottom="1dp"
+                android:id="@+id/offer"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/toggle_widget_background"
+                android:button="@null"
+                android:gravity="center"
+                android:text="Offers"
+                android:textColor="@color/white" />
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:layout_gravity="center"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>
