@@ -8,12 +8,18 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.Image;
 import android.os.Handler;
 import android.os.SystemClock;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,6 +28,7 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,7 +40,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Set;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     // GUI Components
     private TextView mBluetoothStatus;
@@ -51,9 +58,17 @@ public class MainActivity extends AppCompatActivity {
     private ImageView left;
     private ImageView right;
     private ImageView backward;
-    private LinearLayout set;
+   LinearLayout set;
     private RelativeLayout Con;
-
+    private TextView textView;
+    private SensorManager sensorManager;
+    private Sensor sensor;
+    LinearLayout second;
+     RadioButton bcontrol;
+     RadioButton tcontrol;
+    LinearLayout buttons;
+  LinearLayout tilt;
+    Context context;
 
 
     private Handler mHandler; // Our main handler that will receive callback notifications
@@ -86,6 +101,34 @@ public class MainActivity extends AppCompatActivity {
         backward =(ImageView)findViewById(R.id.backward);
         set =(LinearLayout)findViewById(R.id.setting);
         Con =(RelativeLayout)findViewById(R.id.controls);
+        second=(LinearLayout)findViewById(R.id.second);
+        context=this;
+        //declaring Sensor Manager and sensor type
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.unregisterListener(MainActivity.this);
+        bcontrol=(RadioButton)findViewById(R.id.button);
+        tcontrol=(RadioButton)findViewById(R.id.gyro);
+        buttons=(LinearLayout)findViewById(R.id.moveButton);
+        tilt=(LinearLayout)findViewById(R.id.tiltControl);
+        bcontrol.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                buttons.setVisibility(View.VISIBLE);
+                tilt.setVisibility(View.GONE);
+                sensorManager.unregisterListener(MainActivity.this);
+            }
+        });
+        tcontrol.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                buttons.setVisibility(View.GONE);
+                tilt.setVisibility(View.VISIBLE);
+                sensorManager.registerListener(MainActivity.this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+            }
+        });
+        //locate views
+        textView =  findViewById(R.id.txt);
 
 
         mBTArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
@@ -105,8 +148,7 @@ public class MainActivity extends AppCompatActivity {
                 if(msg.what == CONNECTING_STATUS){
                     if(msg.arg1 == 1){
                         mBluetoothStatus.setText("Connected to Device: " + (String)(msg.obj));
-                    set.setVisibility(View.GONE);
-                    Con.setVisibility(View.VISIBLE);}
+                    }
                     else
                         mBluetoothStatus.setText("Connection Failed");
                 }
@@ -268,7 +310,8 @@ public class MainActivity extends AppCompatActivity {
 
     private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
         public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
-
+            set.setVisibility(View.GONE);
+            Con.setVisibility(View.VISIBLE);
 
 
             if(!mBTAdapter.isEnabled()) {
@@ -319,7 +362,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }.start();
+
         }
+
     };
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
@@ -388,6 +433,58 @@ public class MainActivity extends AppCompatActivity {
                 mmSocket.close();
             } catch (IOException e) { }
         }
+    }
+    @Override
+    public void onAccuracyChanged(Sensor arg0, int arg1) {
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float x = event.values[0];
+        float y = event.values[1];
+        if (Math.abs(x) > Math.abs(y)) {
+            if (x < 0) {
+                textView.setText("You tilt the device right");
+                if(mConnectedThread != null) //First check to make sure thread created
+                    mConnectedThread.write("3");
+                Log.i("Info","written3");
+            }
+            if (x > 0) {
+                textView.setText("You tilt the device left");
+                if(mConnectedThread != null) //First check to make sure thread created
+                    mConnectedThread.write("2");
+                Log.i("Info","written2");
+            }
+        } else {
+            if (y < 0) {
+                textView.setText("You tilt the device up");
+                if(mConnectedThread != null) //First check to make sure thread created
+                    mConnectedThread.write("1");
+                Log.i("Info","written1");
+            }
+            if (y > 0) {
+                textView.setText("You tilt the device down");
+                if(mConnectedThread != null) //First check to make sure thread created
+                    mConnectedThread.write("4");
+                Log.i("Info","written4");
+            }
+        }
+        if (x > (-2) && x < (2) && y > (-2) && y < (2)) {
+            textView.setText("Not tilt device");
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregister Sensor listener
+        sensorManager.unregisterListener(MainActivity.this);
     }
 }
 

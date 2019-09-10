@@ -89,12 +89,69 @@
         android:layout_height="match_parent"
         android:id="@+id/controls"
         android:visibility="gone">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:orientation="vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+
+            android:id="@+id/second">
+            <RadioGroup
+                android:checkedButton="@+id/button"
+                android:id="@+id/toggle"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="50dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/pink_out_line"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:layout_marginTop="1dp"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="1dp"
+                    android:id="@+id/button"
+                    android:background="@drawable/toggle_widget_background"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:text="Button"
+                    android:textColor="@color/white" />
+
+                <RadioButton
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_marginBottom="1dp"
+                    android:id="@+id/gyro"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/toggle_widget_background"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:text="Tilt"
+                    android:textColor="@color/white" />
+            </RadioGroup>
+
+
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:id="@+id/moveButton"
+            android:visibility="visible">
 
             <ImageView
                 android:id="@+id/forward"
@@ -129,63 +186,11 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/backward" />
         </LinearLayout>
-
-
-    </RelativeLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="invisible"
-        android:orientation="vertical"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:gravity="center">
-        <RadioGroup
-            android:checkedButton="@+id/offer"
-            android:id="@+id/toggle"
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="50dp"
-            android:layout_marginRight="50dp"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/pink_out_line"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:layout_marginTop="1dp"
-                android:layout_marginBottom="1dp"
-                android:layout_marginLeft="1dp"
-                android:id="@+id/search"
-                android:background="@drawable/toggle_widget_background"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:button="@null"
-                android:gravity="center"
-                android:text="Search"
-                android:textColor="@color/white" />
-
-            <RadioButton
-                android:layout_marginRight="1dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginBottom="1dp"
-                android:id="@+id/offer"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/toggle_widget_background"
-                android:button="@null"
-                android:gravity="center"
-                android:text="Offers"
-                android:textColor="@color/white" />
-        </RadioGroup>
-
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:visibility="invisible"
+            android:id="@+id/tiltControl">
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -195,6 +200,9 @@
                 android:layout_gravity="center"/>
         </LinearLayout>
 
-    </LinearLayout>
+
+
+    </RelativeLayout>
+
 
 </RelativeLayout>
