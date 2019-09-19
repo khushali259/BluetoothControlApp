@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">#6C6F71</color>
+    <color name="colorPrimaryDark">#404345</color>
+    <color name="colorAccent">#fff</color>
     <color name="white">#FFFFFF</color>
-    <color name="pink">#FF1493</color>
-    <color name="dark_pink">#D81B60</color>
-    <color name="orange">#FF7F27</color>
-    <color name="yellow">#FFCD0E</color>
+    <color name="buttoncolor">#888D90</color>
+    <color name="red">#F91111</color>
+    <color name="blue">#1F29ED</color>
+    <color name="yellow">#FFF200</color>
+    <color name="green">#22B14C</color>
+
+
 </resources>

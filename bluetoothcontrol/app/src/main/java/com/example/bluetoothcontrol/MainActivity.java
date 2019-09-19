@@ -8,80 +8,75 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.Image;
 import android.os.Handler;
+import android.os.Message;
 import android.os.SystemClock;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Set;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener ,View.OnClickListener {
 
     // GUI Components
     private TextView mBluetoothStatus;
-
-    private Button mScanBtn;
-    private Button mOffBtn;
+    private TextView textView;
     private Button mListPairedDevicesBtn;
     private Button mDiscoverBtn;
     private BluetoothAdapter mBTAdapter;
     private Set<BluetoothDevice> mPairedDevices;
     private ArrayAdapter<String> mBTArrayAdapter;
     private ListView mDevicesListView;
-
     private ImageView forward;
     private ImageView left;
     private ImageView right;
-    private ImageView backward;
-   LinearLayout set;
-    private RelativeLayout Con;
-    private TextView textView;
+    private ImageView stop;
+    private ImageView back;
+
     private SensorManager sensorManager;
     private Sensor sensor;
-    LinearLayout second;
-     RadioButton bcontrol;
-     RadioButton tcontrol;
-    LinearLayout buttons;
-  LinearLayout tilt;
-    Context context;
 
-
-    private Handler mHandler; // Our main handler that will receive callback notifications
+    private RelativeLayout Con;
+    private LinearLayout set;
+    private LinearLayout second;
+    private LinearLayout buttons;
+    private LinearLayout tilt;
+    private RadioButton bcontrol;
+    private RadioButton tcontrol;
+    private static Handler mHandler; // Our main handler that will receive callback notifications
     private ConnectedThread mConnectedThread; // bluetooth background worker thread to send and receive data
     private BluetoothSocket mBTSocket = null; // bi-directional client-to-client data path
-
     private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier
-
-
     // #defines for identifying shared types between calling functions
     private final static int REQUEST_ENABLE_BT = 1; // used to identify adding bluetooth names
     private final static int MESSAGE_READ = 2; // used in bluetooth handler to identify message update
     private final static int CONNECTING_STATUS = 3; // used in bluetooth handler to identify message status
+    private  int command =0;
+    Handler handler;
+    int click=0;
 
 
     @Override
@@ -90,140 +85,142 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
 
         mBluetoothStatus = (TextView)findViewById(R.id.bluetoothStatus);
-
-        mScanBtn = (Button)findViewById(R.id.scan);
-        mOffBtn = (Button)findViewById(R.id.off);
         mDiscoverBtn = (Button)findViewById(R.id.discover);
         mListPairedDevicesBtn = (Button)findViewById(R.id.PairedBtn);
         forward=(ImageView) findViewById(R.id.forward);
         left=(ImageView) findViewById(R.id.left);
         right =(ImageView)findViewById(R.id.right);
-        backward =(ImageView)findViewById(R.id.backward);
+        stop =(ImageView)findViewById(R.id.stop);
+        back=(ImageView)findViewById(R.id.back);
         set =(LinearLayout)findViewById(R.id.setting);
         Con =(RelativeLayout)findViewById(R.id.controls);
         second=(LinearLayout)findViewById(R.id.second);
-        context=this;
+
         //declaring Sensor Manager and sensor type
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.unregisterListener(MainActivity.this);
         bcontrol=(RadioButton)findViewById(R.id.button);
-        tcontrol=(RadioButton)findViewById(R.id.gyro);
+        tcontrol=(RadioButton)findViewById(R.id.accelerometer);
         buttons=(LinearLayout)findViewById(R.id.moveButton);
         tilt=(LinearLayout)findViewById(R.id.tiltControl);
-        bcontrol.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                buttons.setVisibility(View.VISIBLE);
-                tilt.setVisibility(View.GONE);
-                sensorManager.unregisterListener(MainActivity.this);
-            }
-        });
-        tcontrol.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                buttons.setVisibility(View.GONE);
-                tilt.setVisibility(View.VISIBLE);
-                sensorManager.registerListener(MainActivity.this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-            }
-        });
         //locate views
         textView =  findViewById(R.id.txt);
+        mBTArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView textView = (TextView) super.getView(position, convertView, parent);
+                textView.setTextColor(Color.WHITE);
+                return textView;
+            }
+        };
 
-
-        mBTArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
         mBTAdapter = BluetoothAdapter.getDefaultAdapter(); // get a handle on the bluetooth radio
-
         mDevicesListView = (ListView)findViewById(R.id.devicesListView);
-        mDevicesListView.setAdapter(mBTArrayAdapter); // assign model to view
+        mDevicesListView.setAdapter(mBTArrayAdapter);// assign model to view
         mDevicesListView.setOnItemClickListener(mDeviceClickListener);
-
-
-
+        final Switch sw = (Switch) findViewById(R.id.switch1);
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    bluetoothOn(sw);
+                } else {
+                    bluetoothOff(sw);
+                }
+            }
+        });
 
         mHandler = new Handler(){
-            public void handleMessage(android.os.Message msg){
+            public void handleMessage(Message msg){
 
 
                 if(msg.what == CONNECTING_STATUS){
                     if(msg.arg1 == 1){
                         mBluetoothStatus.setText("Connected to Device: " + (String)(msg.obj));
+                        set.setVisibility(View.GONE);
+                        Con.setVisibility(View.VISIBLE);
                     }
                     else
                         mBluetoothStatus.setText("Connection Failed");
                 }
             }
         };
-
         if (mBTArrayAdapter == null) {
             // Device does not support Bluetooth
             mBluetoothStatus.setText("Status: Bluetooth not found");
             Toast.makeText(getApplicationContext(),"Bluetooth device not found!",Toast.LENGTH_SHORT).show();
         }
         else {
+            forward.setOnClickListener(this);
+            left.setOnClickListener(this);
+            right.setOnClickListener(this);
+            stop.setOnClickListener(this);
+            bcontrol.setOnClickListener(this);
+            tcontrol.setOnClickListener(this);
+            mListPairedDevicesBtn.setOnClickListener(this);
+            mDiscoverBtn.setOnClickListener(this);
+            back.setOnClickListener(this);
 
 
-            forward.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View v){
-                    if(mConnectedThread != null) //First check to make sure thread created
-                        mConnectedThread.write("1");
-                    Log.i("Info","written1");
-                }
-            });
-            left.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View v){
-                    if(mConnectedThread != null) //First check to make sure thread created
-                        mConnectedThread.write("2");
-                    Log.i("Info","written2");
-                }
-            });
-            right.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View v){
-                    if(mConnectedThread != null) //First check to make sure thread created
-                        mConnectedThread.write("3");
-                    Log.i("Info","written3");
-                }
-            });
-            backward.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View v){
-                    if(mConnectedThread != null) //First check to make sure thread created
-                        mConnectedThread.write("4");
-                    Log.i("Info","written4");
-                }
-            });
+        }
+    }
+    @Override
+    public void onClick(View v)
+    {
+        if(v.getId()==R.id.button)
+        {
+            buttons.setVisibility(View.VISIBLE);
+            tilt.setVisibility(View.GONE);
+            sensorManager.unregisterListener(MainActivity.this);
+        }
+        else if (v.getId()==R.id.accelerometer)
+        {   if(click!=0) {
+                handler.removeCallbacksAndMessages(null);
+            }
+            buttons.setVisibility(View.GONE);
+            tilt.setVisibility(View.VISIBLE);
+            sensorManager.registerListener(MainActivity.this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+        else if(v.getId()==R.id.PairedBtn)
+        {
+            listPairedDevices(v);
+        }
+        else if (v.getId()==R.id.discover)
+        {
+            discover(v);
+        }
+        else if(v.getId()==R.id.forward)
+        {
+            command = 1;
+            click++;
+            checkConnect(command);
+        }
+        else if (v.getId()==R.id.left)
+        {
+            command = 2;
+            click++;
+            checkConnect(command);
+        }
+        else if (v.getId()==R.id.right)
+        {
+            command = 3;
+            click++;
+            checkConnect(command);
+        }
+        else if(v.getId()==R.id.stop)
+        {
+            command = 4;
+            click++;
+            checkConnect(command);
+        }
+        else if (v.getId()==R.id.back)
+        {
+
+            set.setVisibility(View.VISIBLE);
+            Con.setVisibility(View.GONE);
 
 
-            mScanBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    bluetoothOn(v);
-                }
-            });
-
-            mOffBtn.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View v){
-                    bluetoothOff(v);
-                }
-            });
-
-            mListPairedDevicesBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v){
-                    listPairedDevices(v);
-                }
-            });
-
-            mDiscoverBtn.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View v){
-                    discover(v);
-                }
-            });
         }
     }
 
@@ -233,7 +230,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             mBluetoothStatus.setText("Bluetooth enabled");
             Toast.makeText(getApplicationContext(),"Bluetooth turned on",Toast.LENGTH_SHORT).show();
-
         }
         else{
             Toast.makeText(getApplicationContext(),"Bluetooth is already on", Toast.LENGTH_SHORT).show();
@@ -243,14 +239,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // Enter here after user selects "yes" or "no" to enabling radio
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent Data) {
-        // Check which request we're responding to
-
         super.onActivityResult(requestCode, resultCode, Data);
         if (requestCode == REQUEST_ENABLE_BT) {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
-                // The user picked a contact.
-                // The Intent's data Uri identifies which contact was selected.
                 mBluetoothStatus.setText("Enabled");
             } else
                 mBluetoothStatus.setText("Disabled");
@@ -310,9 +302,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
         public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
+
             set.setVisibility(View.GONE);
             Con.setVisibility(View.VISIBLE);
-
 
             if(!mBTAdapter.isEnabled()) {
                 Toast.makeText(getBaseContext(), "Bluetooth not on", Toast.LENGTH_SHORT).show();
@@ -349,7 +341,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             mHandler.obtainMessage(CONNECTING_STATUS, -1, -1)
                                     .sendToTarget();
                         } catch (IOException e2) {
-                            //insert code to deal with this
                             Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -415,10 +406,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         }
-
-        /* Call this from the main activity to send data to the remote device */
         public void write(String input) {
-            byte[] bytes = input.getBytes();           //converts entered String into bytes
+            byte[] bytes = input.getBytes();
             try {
                 mmOutStream.write(bytes);
 
@@ -426,8 +415,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             }
         }
-
-        /* Call this from the main activity to shutdown the connection */
         public void cancel() {
             try {
                 mmSocket.close();
@@ -444,40 +431,40 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float y = event.values[1];
         if (Math.abs(x) > Math.abs(y)) {
             if (x < 0) {
-                textView.setText("You tilt the device right");
+                textView.setText("Turn Right");
+                textView.setTextColor(getResources().getColor(R.color.green));
                 if(mConnectedThread != null) //First check to make sure thread created
                     mConnectedThread.write("3");
-                Log.i("Info","written3");
+                Log.i("Info","3");
             }
             if (x > 0) {
-                textView.setText("You tilt the device left");
+                textView.setText("Turn Left");
+                textView.setTextColor(getResources().getColor(R.color.blue));
                 if(mConnectedThread != null) //First check to make sure thread created
+
                     mConnectedThread.write("2");
-                Log.i("Info","written2");
+                Log.i("Info","2");
             }
         } else {
             if (y < 0) {
-                textView.setText("You tilt the device up");
+                textView.setText("Move Forward");
+                textView.setTextColor(getResources().getColor(R.color.red));
                 if(mConnectedThread != null) //First check to make sure thread created
                     mConnectedThread.write("1");
-                Log.i("Info","written1");
+                Log.i("Info","1");
             }
             if (y > 0) {
-                textView.setText("You tilt the device down");
+                textView.setText("Stop");
+                textView.setTextColor(getResources().getColor(R.color.yellow));
                 if(mConnectedThread != null) //First check to make sure thread created
                     mConnectedThread.write("4");
-                Log.i("Info","written4");
+                Log.i("Info","4");
             }
         }
         if (x > (-2) && x < (2) && y > (-2) && y < (2)) {
-            textView.setText("Not tilt device");
+            textView.setText("No Change");
+            textView.setTextColor(getResources().getColor(R.color.white));
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
@@ -486,5 +473,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //unregister Sensor listener
         sensorManager.unregisterListener(MainActivity.this);
     }
+    public void checkConnect(final int command) {
+        if(click!=1){
+            handler.removeCallbacksAndMessages(null);}
+        handler = new Handler();
+
+        handler.postDelayed(new Runnable(){
+            public void run(){
+                if (mConnectedThread != null)//First check to make sure thread created
+                    mConnectedThread.write(Integer.toString(command));
+                Log.i("Info", Integer.toString(command));
+                handler.postDelayed(this, 1000);
+            }
+        }, 1000);
+
+
+
+
+
+    }
+
 }
 
