@@ -303,9 +303,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
         public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
 
-            set.setVisibility(View.GONE);
-            Con.setVisibility(View.VISIBLE);
-
             if(!mBTAdapter.isEnabled()) {
                 Toast.makeText(getBaseContext(), "Bluetooth not on", Toast.LENGTH_SHORT).show();
                 return;
